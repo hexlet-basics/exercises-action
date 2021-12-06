@@ -1,0 +1,60 @@
+name: 'Hexlet basics exercises action'
+description: 'Action for build language images hexlet-basics'
+
+inputs:
+  DOCKER_USERNAME:
+    required: true
+  DOCKER_PASSWORD:
+    required: true
+
+runs:
+  using: 'composite'
+
+  steps:
+    - name: Set image name
+      run: |
+        echo "IMAGE_NAME=hexletbasics/$(echo "$GITHUB_REPOSITORY" | cut -d/ -f2)" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+      with:
+        # NOTE: Using a docker driver reduces build times.
+        driver: docker
+
+    - name: Login to Docker Hub
+      if: ${{ github.event_name == 'push' }}
+      uses: docker/login-action@v1
+      with:
+        username: ${{ inputs.DOCKER_USERNAME }}
+        password: ${{ inputs.DOCKER_PASSWORD }}
+
+      # NOTE: But you need to download the cached image separately. Otherwise, caching works every other time.
+    - name: Pull cached
+      run: docker pull ${{ env.IMAGE_NAME }}:cached || true
+      shell: bash
+
+    - name: Build
+      uses: docker/build-push-action@v2
+      with:
+        cache-from: ${{ env.IMAGE_NAME }}:cached
+        cache-to: type=inline
+        tags: |
+          ${{ env.IMAGE_NAME }}:cached
+          ${{ env.IMAGE_NAME }}:latest
+
+    - name: Push cached
+      if: ${{ github.event_name == 'push' }}
+      run: docker push ${{ env.IMAGE_NAME }}:cached
+      shell: bash
+
+    - uses: actions/checkout@v2
+
+    - name: Check
+      run: docker-compose --file docker-compose.yml up --abort-on-container-exit
+      shell: bash
+
+    - name: Push latest
+      if: ${{ github.event_name == 'push' }}
+      run: docker push ${{ env.IMAGE_NAME }}:latest
+      shell: bash
