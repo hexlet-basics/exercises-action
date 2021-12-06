@@ -1,0 +1,9 @@
+---
+
+version: '3'
+
+services:
+  exercises:
+    build: .
+    image: hexletbasics/exercises-action:cached
+    command: make check
