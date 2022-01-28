@@ -29,3 +29,5 @@ $ make release
 
 This repository is created and maintained by the team and the community of Hexlet, an educational project. [Read more about Hexlet (in Russian)](https://ru.hexlet.io/pages/about?utm_source=github&utm_medium=link&utm_campaign=exercises-action).
 ##
+
+See most active contributers on [hexlet-friends](https://friends.hexlet.io/).
