@@ -64,7 +64,7 @@ runs:
         # github_token: ${{ secrets.github_token }}
         # Change reviewdog reporter if you need [github-pr-check,github-check,github-pr-review].
         reporter: github-pr-review
-        language:
-          default: 'ru-RU'
+        # language:
+        #   default: 'ru-RU'
         # Change reporter level if you need.
         level: info
