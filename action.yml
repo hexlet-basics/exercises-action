@@ -51,7 +51,7 @@ runs:
     - uses: actions/checkout@v4
 
     - name: Check
-      run: docker-compose --file docker-compose.yml up --abort-on-container-exit
+      run: docker compose --file docker-compose.yml up --abort-on-container-exit
       shell: bash
 
     - name: Push latest
