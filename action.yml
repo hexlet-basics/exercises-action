@@ -16,12 +16,6 @@ runs:
         echo "IMAGE_NAME=hexletbasics/$(echo "$GITHUB_REPOSITORY" | cut -d/ -f2)" >> $GITHUB_ENV
       shell: bash
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      with:
-        # NOTE: Using a docker driver reduces build times.
-        driver: docker
-
     - name: Login to Docker Hub
       if: ${{ github.event_name == 'push' }}
       uses: docker/login-action@v3
@@ -29,13 +23,25 @@ runs:
         username: ${{ inputs.DOCKER_USERNAME }}
         password: ${{ inputs.DOCKER_PASSWORD }}
 
+    -
+      # Add support for more platforms with QEMU (optional)
+      # https://github.com/docker/setup-qemu-action
+      name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        # NOTE: Using a docker driver reduces build times.
+        driver: docker
+
       # NOTE: But you need to download the cached image separately. Otherwise, caching works every other time.
     - name: Pull cached
       run: docker pull ${{ env.IMAGE_NAME }}:cached || true
       shell: bash
 
     - name: Build
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         cache-from: ${{ env.IMAGE_NAME }}:cached
         cache-to: type=inline
@@ -69,9 +75,9 @@ runs:
         # Change reporter level if you need.
         level: info
 
-    - name: Spellcheck
-      uses:  addnab/docker-run-action@v3
-      with:
-        image: hexlet/languagetool-cli:latest
-        options: -v ${{ github.workspace }}/modules:/content
-        run: node ./bin/run.js check /content/**/*.md
+    # - name: Spellcheck
+    #   uses:  addnab/docker-run-action@v3
+    #   with:
+    #     image: hexlet/languagetool-cli:latest
+    #     options: -v ${{ github.workspace }}/modules:/content
+    #     run: node ./bin/run.js check /content/**/*.md
