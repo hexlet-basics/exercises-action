@@ -3,9 +3,11 @@ description: "Action for building and testing language images for hexlet-basics"
 
 inputs:
   DOCKER_USERNAME:
-    required: true
+    required: false
+    default: ${{ github.actor }}
   DOCKER_PASSWORD:
-    required: true
+    required: false
+    default: ${{ secrets.GITHUB_TOKEN }}
 
 runs:
   using: "composite"
@@ -14,13 +16,13 @@ runs:
 
     - name: Set image name
       run: |
-        echo "IMAGE_NAME=hexletbasics/$(echo "$GITHUB_REPOSITORY" | cut -d/ -f2)" >> $GITHUB_ENV
+        echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
       shell: bash
 
-    - name: Login to Docker Hub
-      if: ${{ github.event_name == 'push' }}
+    - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
+        registry: ghcr.io
         username: ${{ inputs.DOCKER_USERNAME }}
         password: ${{ inputs.DOCKER_PASSWORD }}
 
@@ -56,3 +58,4 @@ runs:
       with:
         reporter: github-check
         level: info
+
