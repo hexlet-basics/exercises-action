@@ -3,11 +3,9 @@ description: "Action for building and testing language images for hexlet-basics"
 
 inputs:
   DOCKER_USERNAME:
-    required: false
-    default: ${{ github.actor }}
+    required: true
   DOCKER_PASSWORD:
-    required: false
-    default: ${{ secrets.GITHUB_TOKEN }}
+    required: true
 
 runs:
   using: "composite"
