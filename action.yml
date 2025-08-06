@@ -24,31 +24,48 @@ runs:
         username: ${{ inputs.DOCKER_USERNAME }}
         password: ${{ inputs.DOCKER_PASSWORD }}
 
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
-
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Build
+    # 🚀 Сборка только под amd64 для тестов (быстро)
+    - name: Build (amd64 only, for testing)
       uses: docker/build-push-action@v6
       with:
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        platforms: linux/amd64
         load: true
-        tags: ${{ env.IMAGE_NAME }}
+        cache-from: type=gha,scope=${{ github.repository }}-amd64
+        cache-to: type=gha,mode=max,scope=${{ github.repository }}-amd64
+        tags: ${{ env.IMAGE_NAME }}:test
 
     - name: Check
       run: docker compose --file docker-compose.yml up --abort-on-container-exit
       shell: bash
 
-    - name: Push latest
+    # ✅ Греем arm64 кеш без пуша
+    - name: Warm up arm64 cache
+      if: ${{ github.event_name == 'push' }}
+      uses: docker/build-push-action@v6
+      with:
+        platforms: linux/arm64
+        push: false
+        cache-from: type=gha,scope=${{ github.repository }}-arm64
+        cache-to: type=gha,mode=max,scope=${{ github.repository }}-arm64
+        tags: ${{ env.IMAGE_NAME }}:cache-arm64
+
+    # ⚙️ QEMU нужен только для push мультиархитектур
+    - name: Set up QEMU
+      if: ${{ github.event_name == 'push' }}
+      uses: docker/setup-qemu-action@v3
+
+    - name: Push multiarch image
       if: ${{ github.event_name == 'push' }}
       uses: docker/build-push-action@v6
       with:
         platforms: linux/amd64,linux/arm64
         push: true
-        cache-from: type=gha
+        cache-from: |
+          type=gha,scope=${{ github.repository }}-amd64
+          type=gha,scope=${{ github.repository }}-arm64
         cache-to: type=gha,mode=max
         tags: ${{ env.IMAGE_NAME }}:latest
 
@@ -56,4 +73,3 @@ runs:
       with:
         reporter: github-check
         level: info
-
