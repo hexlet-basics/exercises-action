@@ -3,8 +3,10 @@ description: "Action for building and testing language images for hexlet-basics"
 
 inputs:
   DOCKER_USERNAME:
+    description: "Username used to authenticate to ghcr.io"
     required: true
   DOCKER_PASSWORD:
+    description: "Token/password used to authenticate to ghcr.io"
     required: true
 
 runs:
@@ -27,7 +29,7 @@ runs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    # 🚀 Сборка только под amd64 для тестов (быстро)
+    # Build amd64 image and load it locally for the check step.
     - name: Build (amd64 only, for testing)
       uses: docker/build-push-action@v6
       with:
@@ -41,18 +43,7 @@ runs:
       run: docker compose --file docker-compose.yml up --abort-on-container-exit
       shell: bash
 
-    # ✅ Греем arm64 кеш без пуша
-    - name: Warm up arm64 cache
-      if: ${{ github.event_name == 'push' }}
-      uses: docker/build-push-action@v6
-      with:
-        platforms: linux/arm64
-        push: false
-        cache-from: type=gha,scope=${{ github.repository }}-arm64
-        cache-to: type=gha,mode=max,scope=${{ github.repository }}-arm64
-        tags: ${{ env.IMAGE_NAME }}:cache-arm64
-
-    # ⚙️ QEMU нужен только для push мультиархитектур
+    # QEMU is needed only for multi-architecture push.
     - name: Set up QEMU
       if: ${{ github.event_name == 'push' }}
       uses: docker/setup-qemu-action@v3
@@ -68,8 +59,3 @@ runs:
           type=gha,scope=${{ github.repository }}-arm64
         cache-to: type=gha,mode=max
         tags: ${{ env.IMAGE_NAME }}:latest
-
-    - uses: reviewdog/action-languagetool@v1
-      with:
-        reporter: github-check
-        level: info

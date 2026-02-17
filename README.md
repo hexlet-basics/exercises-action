@@ -5,24 +5,37 @@
 ## Develop
 
 ```bash
-# setup
+# setup image
 make
-# run
+# run checks in compose service
 make compose
-# check
+# run CI check flow locally
 make ci-check
 
-# run tests
+# run tests directly
 make compose-test
 
-# run linters and validators
+# run module checks
 make compose-code-lint
+# run content/schema checks
 make compose-description-lint
 make compose-schema-validate
 
 # release
 make release
 ```
+
+## Action contract
+
+Inputs:
+
+- `DOCKER_USERNAME` - username for authentication in `ghcr.io`
+- `DOCKER_PASSWORD` - token/password for authentication in `ghcr.io`
+
+Behavior:
+
+- Pull requests: build amd64 image and run `docker compose ... up --abort-on-container-exit`
+- Push to `main`: run checks and publish multiarch image (`linux/amd64,linux/arm64`) to GHCR
 
 ---
 

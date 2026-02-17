@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo "testing `basename $PWD`" 
+echo "testing $(basename "$PWD")"
