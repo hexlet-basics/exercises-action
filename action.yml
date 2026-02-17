@@ -43,19 +43,30 @@ runs:
       run: docker compose --file docker-compose.yml up --abort-on-container-exit
       shell: bash
 
-    # QEMU is needed only for multi-architecture push.
-    - name: Set up QEMU
-      if: ${{ github.event_name == 'push' }}
-      uses: docker/setup-qemu-action@v3
-
-    - name: Push multiarch image
+    - name: Build and push amd64 image
       if: ${{ github.event_name == 'push' }}
       uses: docker/build-push-action@v6
       with:
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/amd64
         push: true
-        cache-from: |
-          type=gha,scope=${{ github.repository }}-amd64
-          type=gha,scope=${{ github.repository }}-arm64
-        cache-to: type=gha,mode=max
-        tags: ${{ env.IMAGE_NAME }}:latest
+        cache-from: type=gha,scope=${{ github.repository }}-amd64
+        cache-to: type=gha,mode=max,scope=${{ github.repository }}-amd64
+        tags: ${{ env.IMAGE_NAME }}:latest-amd64
+
+    - name: Publish latest manifest
+      if: ${{ github.event_name == 'push' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        if docker buildx imagetools inspect "${IMAGE_NAME}:latest-arm64" > /dev/null 2>&1; then
+          docker buildx imagetools create \
+            -t "${IMAGE_NAME}:latest" \
+            "${IMAGE_NAME}:latest-amd64" \
+            "${IMAGE_NAME}:latest-arm64"
+        else
+          echo "No arm64 image found, publishing amd64-only latest"
+          docker buildx imagetools create \
+            -t "${IMAGE_NAME}:latest" \
+            "${IMAGE_NAME}:latest-amd64"
+        fi

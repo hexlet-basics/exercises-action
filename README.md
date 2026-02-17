@@ -35,7 +35,8 @@ Inputs:
 Behavior:
 
 - Pull requests: build amd64 image and run `docker compose ... up --abort-on-container-exit`
-- Push to `main`: run checks and publish multiarch image (`linux/amd64,linux/arm64`) to GHCR
+- Push to `main`: run checks, publish `latest-amd64`, then publish/update `latest` manifest
+- Nightly schedule: build/publish `latest-arm64` and refresh `latest` manifest
 
 ---
 
