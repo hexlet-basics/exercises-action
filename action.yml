@@ -27,7 +27,7 @@ runs:
         password: ${{ inputs.DOCKER_PASSWORD }}
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4
 
     # Build amd64 image and load it locally for the check step.
     - name: Build (amd64 only, for testing)
