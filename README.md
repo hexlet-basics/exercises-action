@@ -1,6 +1,6 @@
 # exercises-action
 
-[![Github Actions Status](../../workflows/Test%20action/badge.svg)](../../actions)
+[![Github Actions Status](https://github.com/hexlet-basics/exercises-action/actions/workflows/test.yml/badge.svg)](https://github.com/hexlet-basics/exercises-action/actions)
 
 ## Develop
 
